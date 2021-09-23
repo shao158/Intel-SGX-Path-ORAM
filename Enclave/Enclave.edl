@@ -1,0 +1,176 @@
+/*
+ * Copyright (C) 2011-2020 Intel Corporation. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of Intel Corporation nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/* Enclave.edl - Top EDL file. */
+
+enclave {
+    
+    include "user_types.h" /* buffer_t */
+
+    /* Import ECALL/OCALL from sub-directory EDLs.
+     *  [from]: specifies the location of EDL file. 
+     *  [import]: specifies the functions to import, 
+     *  [*]: implies to import all functions.
+     */
+
+    from "sgx_tprotected_fs.edl" import *;
+
+    include "sgx_tprotected_fs.h"
+    include "Conf.h"
+    
+    trusted {
+      
+      public void ecall_test_osort(uint32_t len, uint32_t do_sort);
+
+      public void ecall_decryptData([user_check]uint8_t *encDataIn,
+                                    uint32_t len,
+                                    [user_check]uint8_t *decDataOut,
+                                    uint32_t len_out);
+
+      public void ecall_encryptData([user_check]uint8_t *decDataIn,
+                                    uint32_t len,
+                                    [user_check]uint8_t *encDataOut,
+                                    uint32_t len_out);
+
+      public void ecall_read_mm_in_client(uint64_t ind,
+                                          [user_check]uint32_t *block_path,
+                                          uint64_t block_path_size);
+
+      public void ecall_write_mm_in_client(uint64_t ind,
+                                           [user_check]uint32_t *block_path,
+                                           uint64_t block_path_size);
+
+      public void ecall_init_client(uint32_t height, uint32_t block_size);
+
+      public void ecall_destory_client();
+
+      public void ecall_test_aes();
+
+      public void ecall_download_path_to_enclave_client_path_oram(
+          [user_check]EncMemTreeNode *all_nodes, 
+          uint32_t height,
+          uint32_t block_path, uint32_t block_size);
+
+      public void ecall_download_path_to_enclave_client_aes(
+          [user_check]EncMemTreeNode *all_nodes, 
+          uint32_t height,
+          uint32_t block_path, uint32_t block_size);
+      
+      public void ecall_download_path_to_enclave_client(
+          [user_check]MemTreeNode *all_nodes, 
+          uint32_t height,
+          uint32_t block_path, uint32_t block_size);
+
+      public void ecall_evict_path_outside_enclave_path_oram(
+          [user_check]EncMemTreeNode *all_nodes,
+          uint32_t height,
+          BlockPath block_path, uint32_t block_size);
+
+      public void ecall_update_path_outside_enclave_aes(
+          [user_check]EncMemTreeNode *all_nodes,
+          uint32_t height,
+          BlockPath block_path, uint32_t block_size);
+
+      public void ecall_update_path_outside_enclave(
+          [user_check]MemTreeNode *all_nodes,
+          uint32_t height,
+          BlockPath block_path, uint32_t block_size);
+
+      public void ecall_oblivious_fetch(
+          uint32_t height, uint32_t block_size,
+          BlockKey block_key, [user_check]uint8_t *fetched_block,
+          [user_check]uint8_t **encrypted_content_ptr);
+
+      public void ecall_oblivious_put_to_stash_path_oram(
+          [user_check]EncMemTreeNode *all_nodes,
+          uint32_t height,
+          uint32_t block_size,
+          BlockPath block_path,
+          BlockKey block_key,
+          [user_check]uint8_t **encrypted_content_ptr,
+          [user_check]uint8_t *block_content,
+          [user_check]uint32_t *root_load);
+
+      public void ecall_oblivious_put_to_root_aes(
+          [user_check]EncMemTreeNode *all_nodes,
+          uint32_t height,
+          uint32_t block_size,
+          BlockPath block_path,
+          BlockKey block_key,
+          [user_check]uint8_t *block_content,
+          [user_check]uint32_t *root_load);
+
+      public void ecall_oblivious_put_to_root(
+          [user_check]MemTreeNode *all_nodes,
+          uint32_t height,
+          uint32_t block_size,
+          BlockPath block_path,
+          BlockKey block_key,
+          [user_check]uint8_t *block_content,
+          [user_check]uint32_t *root_load);
+
+      public void ecall_client_simple_oram_flush(
+          uint32_t height,
+          uint32_t block_size,
+          uint32_t rand_path);
+      
+
+      public void ecall_enclaveString([out, size=len] char* s, size_t len);
+
+      public SGX_FILE* ecall_file_open([in, string]const char* filename,
+                                       [in, string]const char* mode);
+
+      public size_t ecall_file_write([user_check]SGX_FILE* fp,
+                                     [in, out, count=size]uint8_t* data,
+                                     uint64_t size);
+
+	    public uint64_t ecall_file_get_file_size([user_check]SGX_FILE* fp);
+
+      public size_t ecall_file_read([user_check]SGX_FILE* fp,
+                                    [in, out, count=size]uint8_t* readData,
+                                    uint64_t size);
+
+      public int32_t ecall_file_close([user_check]SGX_FILE* fp);
+    };
+    
+
+    /* 
+     * ocall_print_string - invokes OCALL to display string buffer inside the enclave.
+     *  [in]: copy the string buffer to App outside.
+     *  [string]: specifies 'str' is a NULL terminated buffer.
+     */
+    untrusted {
+        void ocall_sleep(uint64_t time_ms);
+        void ocall_print_string([in, string] const char *str);
+        void ocall_print_time([out, count=1] uint64_t* time_us);
+    };
+
+};
